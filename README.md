@@ -90,6 +90,11 @@ docker run -d  --name mongo -v mongobkp:/data/db  --network agununetwork mongo
 docker volume create -d local  mongobkp
 docker run -d  --name mongo -v mongobkp:/data/db  --network agununetwork mongo
 
+~/var/lib/docker/volumes
+docker run --rm -it -v /Users/<username>/volume-backup:/backup -v /var/lib/docker:/docker alpine:edge tar cfz /backup/volumes.tgz /docker/volumes/
+
+
+
 #Bind Mounts
 #When we use bind mount , a file or directory on the host machine is mounted into a container. The directory is referenced by it's full or relative path.
 #Bind mounts will have limited functionality compared to volumes.
@@ -102,45 +107,219 @@ docker volume create -d local  mongobkp
 docker run -d --name mongo -e MONGO_INITDB_ROOT_USERNAME=devdb -v mongobkp:/data/db -e MONGO_INITDB_ROOT_PASSWORD=devdb@123 --network mss-network mongo
 
 
+#Running container with an external volumes that is outside local Volumes
+#Is not advisable to mount continer with local volume or use BindMount to store data
+
+
 # Install Rex ray EBS Volume driver plugin
+#https://docs.docker.com/engine/extend/legacy_plugins/
+#using local is okay when u have servers in cloud bcos of snapshot we restore our data from snapshot if server clashes
+#shapshot means periodically taking backup by writing script of cronjob
+
 rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/aws/
 
 #volume
-#Install Rex ray EBS Volume driver plugin
-rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/aws/
-
+#Install Rex ray EBS Volume driver plugin is a piece of code
+#create IAM user with has permission to create those volume
 docker plugin install rexray/ebs EBS_ACCESSKEY=<awsAccessKey> EBS_SECRETKEY=<aws_secretkey>
+
+access_key: AKIAUQ6
+secret_key: 3sqEnZFoGNr8
+
+
 EX:
-docker plugin install rexray/ebs EBS_ACCESSKEY=AKIAUQ6YGCGHCGI4WLMI EBS_SECRETKEY=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
+docker plugin install rexray/ebs EBS_ACCESSKEY=AKIAUQ6YGCGHBWJE3O4T EBS_SECRETKEY=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
+#Error response from daemon: dial unix /run/docker/plugins/1f7fd34bb2dc8ecf394d0d39825d37de45afc5088d6d93fcf8dd9b6284ae49a5/rexray.sock: connect: no such file or directory
+
+docker run -d -e AWS_ACCESS_KEY_ID=AKIAUQ6YGCGHBWJE3O4T -e AWS_SECRET_ACCESS_KEY=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 -v /run/docker/plugins:/run/docker/plugins -v /var/run/rexray:/var/run/rexray -v /dev:/dev -v /var/run:/var/run joskfg/docker-rexray
+
+#create ebs volume with rexray
 docker volume create -d rexray/ebs mongodbbkp
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 docker plugin install rexray/s3fs \  S3FS_ACCESSKEY=AKIAJIV3V2OLTBE5O6HQ \  S3FS_SECRETKEY=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
 docker volume create -d rexray/s3fs mongoebsbkp
 docker plugin install --alias rexray/s3fs --grant-all-permissions \
   rexray/s3fs:0.11.3 \
-  S3FS_ACCESSKEY=AKIAJIV3V2OLTBE5O6HQ \
-  S3FS_SECRETKEY=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 \
+  S3FS_ACCESSKEY=AKIAJI \
+  S3FS_SECRETKEY=JVKaPNsQtQ6mlTxB\
   S3FS_REGION=us-west-2 \
   REXRAY_LOGLEVEL=debug
 
  docker plugin install rexray/s3fss \
-  S3FS_ACCESSKEY=AKIAJIV3V2OLTBE5O6HQ \
-  S3FS_SECRETKEY=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
+  S3FS_ACCESSKEY=AKIAJI \
+  S3FS_SECRETKEY=JVKaPNsQtQ6mlTxBSOv
 
 AWSAccessKeyId=AKIAJIV3V2OLTBE5O6HQ
 AWSSecretKey=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
-                                                  #Volume Mapping While creating a container
+#Volume Mapping While creating a container
  docker run -d -p 8080:8080 --name agunuapp --network agununetwork  agunuworld/spring-boot-mongo:5
 docker run -d  --name mongo -v mongoebsbkp:/data/db  --network agununetwork mongo
 docker run -d  --name mongo -v mongoebsbkp:/data/db  --network flipkartnetwork mongo
-                                                     #Docker Compose:
-                                                       #It's tool for defining and runing multicontainer applications.It's a yml file.
-                                                         #With Out Compose:
-                                                           #We have to run long docker run commands to deploy multi continer applications.
+
+#Docker Compose:
+#It's tool for defining and runing multicontainer applications.It's a yml file.
+#With Out Compose:
+
+#We have to run long docker run commands to deploy multi continer applications.
 docker volume create -d <driver> <volumeName>
 docker volume create -d local mongobackup
 docker network create -d <driver> <networkNAme>
 docker network create -d bridge springappnetwork
 docker run -d -p 8080:8080 --name springcontaienr --network springappnetwork agunu2025/mss-mongodb-app:1
 docker run -d --name mongo --network springappnetwork -v mongobackup:/data/db mongo
+
+Docker compose sample
+
+#mymongo db
+version: '3.1'
+
+services:
+  app-svc:
+    image: agunu2025/mss-mongodb-app:1
+    restart: always # This will be ignored if we deploy in docker swarm
+    environment:
+    - MONGO_DB_HOSTNAME=mongo
+    - MONGO_DB_USERNAME=devdb
+    - MONGO_DB_PASSWORD=devdb123
+    ports:
+      - 8080:8080
+    working_dir: /opt/app
+    depends_on:
+      - mongo
+    networks:
+    - mss-network
+  mongo:
+    image: mongo
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=devdb
+    - MONGO_INITDB_ROOT_PASSWORD=devdb123
+    volumes:
+      - mongodb:/data/db
+    restart: always
+    networks:
+    - springappnetwork
+
+volumes:
+  mongodb:
+    external: true
+
+networks:
+  springappnetwork:
+    external: true
+
+
+#wordpress
+version: "3.9"
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    volumes:
+      - wordpress_data:/var/www/html
+    ports:
+      - "8000:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+volumes:
+  db_data: {}
+  wordpress_data: {}
+
+#################
+#https://linuxhint.com/docker_compose_examples/
+version: '3'
+services:
+nginx:
+image: nginx:latest
+volumes:
+- /home/USER/nginx-configuration:/etc/nginx
+ports:
+- 80:80
+- 443:443
+
+####################
+version: '3'
+services:
+ghost:
+image: ghost:latest
+ports:
+- 2368:2368
+volumes:
+- ghost-data:/var/lib/ghost/content/
+
+volumes:
+Ghost-data:
+################################
+version: '3'
+services:
+mydb:
+image: mariadb
+environment:
+- MYSQL_ROOT_PASSWORD=my-secret-pw
+######################################
+version: '3.3'
+
+services:
+db:
+image: mysql:5.7
+volumes:
+- db_data:/var/lib/mysql
+restart: always
+environment:
+MYSQL_ROOT_PASSWORD: somewordpress
+MYSQL_DATABASE: wordpress
+MYSQL_USER: wordpress
+MYSQL_PASSWORD: wordpress
+
+wordpress:
+depends_on:
+- db
+image: wordpress:latest
+ports:
+- "8000:80"
+restart: always
+environment:
+WORDPRESS_DB_HOST: db:3306
+WORDPRESS_DB_USER: wordpress
+WORDPRESS_DB_PASSWORD: wordpress
+volumes:
+db_data:
+############################
+version: ‘3’
+services:
+front-end:
+build: ./frontend-code
+back-end:
+image: mariadb
+###################
+#https://docs.docker.com/compose/gettingstarted/
