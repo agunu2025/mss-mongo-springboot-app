@@ -21,7 +21,7 @@ spec:
         {{- include "mongodb-app.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
-      imagePullSecrets: registry-secretmss
+      imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "mongodb-app.serviceAccountName" . }}
@@ -35,43 +35,27 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 80
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          #   initialDelaySeconds: 60
-          #   periodSeconds: 5
-          #   successThreshold: 1
-          #   failureThreshold: 3
-          #   timeoutSeconds: 10
-          # readinessProbe:
-          #   httpGet:
-          #     path: /
-          #     port: http
-          #   initialDelaySeconds: 60
-          #   periodSeconds: 5
-          #   successThreshold: 1
-          #   failureThreshold: 3
-          #   timeoutSeconds: 10
-          # resources:
-          #   requests:
-          #     memory: 0.25Gi
-          #     cpu: 0.5
-          #   limits:
-          #     memory: 0.25Gi
-          #     cpu: 0.5
-      #       {{- toYaml .Values.resources | nindent 12 }}
-      # {{- with .Values.nodeSelector }}
-      # nodeSelector:
-      #   {{- toYaml . | nindent 8 }}
-      # {{- end }}
-      # {{- with .Values.affinity }}
-      # affinity:
-      #   {{- toYaml . | nindent 8 }}
-      # {{- end }}
-      # {{- with .Values.tolerations }}
-      # tolerations:
-      #   {{- toYaml . | nindent 8 }}
-      # {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
