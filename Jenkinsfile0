@@ -10,9 +10,9 @@ pipeline{
        git branch: 'mss-mongodb', url: 'https://github.com/agunu2025/mss-mongo-springboot-app.git'
              }
           }
-       stage(""){
+       stage("build Java Package"){
           steps{
-              sh "${mvnHome}/bin/mvn clean install "
+              sh "${mvnHome}/bin/mvn clean package "
                }
              }
       stage("docker build"){
