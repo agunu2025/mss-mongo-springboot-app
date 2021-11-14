@@ -1,0 +1,25 @@
+pipeline{
+    agent any
+    environment{
+        VERSION = "${env.BUILD_ID}"
+        def mvnHome = tool 'maven-build'
+       }
+  stages{
+  stage("cloneRepository"){
+       steps{
+       git credentialsId: 'git-authentication-jenkins-login', url: 'https://github.com/agunu2025/mss-mongo-springboot-app.git'
+             }
+          }
+       stage(""){
+          steps{
+              sh "${mvnHome}/bin/mvn clean install "
+               }
+             }
+      stage("docker build"){
+           steps{
+                 sh 'docker build -t 34.125.88.86:8085/mss-app:${VERSION} .'
+                 }
+             }
+
+	 }
+}
