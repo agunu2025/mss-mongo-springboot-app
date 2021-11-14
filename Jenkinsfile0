@@ -21,5 +21,19 @@ pipeline{
                  }
              }
 
+      stage("docker push"){
+          steps{
+              script{
+                  withCredentials([string(credentialsId: 'nexus_docker_password_generated', variable: 'nexus_docker_password_generated')]) {
+                      sh '''
+                         docker login -u admin -p $nexus_docker_password_generated 34.125.88.86:8085
+                         docker push  34.125.88.86:8084/mss-app:${VERSION}
+                         docker rmi 34.125.88.86:8084/mss-app:${VERSION}
+                         '''
+                         }
+                     }
+                 }
+             }
+
 	 }
 }
