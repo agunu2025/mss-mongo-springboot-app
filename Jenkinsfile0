@@ -49,6 +49,17 @@ pipeline{
                      }
                  }
              }
+          stage('Deploying application on k8s cluster') {
+              steps {
+                  script{
+                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-configuration', variable: 'KUBECONFIG')])   {
+                        dir('mss-kpm/') {
+                        sh 'helm upgrade --install --set image.repository="34.125.88.86:8084/mss-app" --set image.tag="${VERSION}" java-web-app mongodb-app/ '
+                             }
+                         }
+                    }
+                 }
+             }
 
 	 }
 }
