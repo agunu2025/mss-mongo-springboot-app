@@ -7,7 +7,7 @@ pipeline{
   stages{
   stage("cloneRepository"){
        steps{
-       git branch: 'mongodb', url: 'https://github.com/agunu2025/mss-mongo-springboot-app.git'
+       git branch: 'mss-mongodb', url: 'https://github.com/agunu2025/mss-mongo-springboot-app.git'
              }
           }
        stage(""){
