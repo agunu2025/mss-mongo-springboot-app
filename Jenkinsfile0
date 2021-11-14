@@ -38,11 +38,11 @@ pipeline{
                  steps{
                      script{
                          withCredentials([string(credentialsId: 'nexus_docker_password_generated', variable: 'nexus_docker_password_generated')]) {
-                               dir('kubernetes/') {
+                               dir('mss-kpm/') {
                                   sh '''
-                                      helmjavawebapp=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
-                                      tar -czvf  myapp-${helmjavawebapp}.tgz myapp/
-                                      curl -u admin:$nexus_docker_password_generated http://34.125.88.86:8081/repository/mss-app-mongodb/ --upload-file myapp-${helmjavawebapp}.tgz -v
+                                      helmjavawebapp=$( helm show chart mongodb | grep version | cut -d: -f 2 | tr -d ' ')
+                                      tar -czvf  mongodb-${helmjavawebapp}.tgz mongodb/
+                                      curl -u admin:$nexus_docker_password_generated http://34.125.88.86:8081/repository/mss-app-mongodb/ --upload-file mongodb-${helmjavawebapp}.tgz -v
                                  '''
                                }
                          }
