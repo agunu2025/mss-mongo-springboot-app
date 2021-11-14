@@ -22,7 +22,7 @@ spec:
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        - name: registry-secretmss
+        - name: mongodb-mss
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "mongodb-app.serviceAccountName" . }}
