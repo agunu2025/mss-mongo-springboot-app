@@ -62,16 +62,16 @@ spec:
             limits:
               memory: 0.25Gi
               cpu: 0.5
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      #       {{- toYaml .Values.resources | nindent 12 }}
+      # {{- with .Values.nodeSelector }}
+      # nodeSelector:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
+      # {{- with .Values.affinity }}
+      # affinity:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
+      # {{- with .Values.tolerations }}
+      # tolerations:
+      #   {{- toYaml . | nindent 8 }}
+      # {{- end }}
