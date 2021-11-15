@@ -39,9 +39,9 @@ pipeline{
                     withCredentials([string(credentialsId: 'nexus_docker_password_generated', variable: 'nexus_docker_password_generated')]) {
                           dir('kubernetes/') {
                              sh '''
-                                 helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
-                                 tar -czvf  myapp-${helmversion}.tgz myapp/
-                                 curl -u admin:$nexus_docker_password_generated http://34.125.127.76:8081/repository/gradle-helm-package/ --upload-file myapp-${helmversion}.tgz -v
+                                 helmversion=$( helm show chart mongodb-app | grep version | cut -d: -f 2 | tr -d ' ')
+                                 tar -czvf  mongodb-app-${helmversion}.tgz mongodb-app/
+                                 curl -u admin:$nexus_docker_password_generated http://34.125.127.76:8081/repository/gradle-helm-package/ --upload-file mongodb-app-${helmversion}.tgz -v
                             '''
                           }
                     }
@@ -53,7 +53,7 @@ pipeline{
                script{
                   withCredentials([kubeconfigFile(credentialsId: 'kubernetes-configuration', variable: 'KUBECONFIG')])   {
                         dir('kubernetes/') {
-                          sh 'helm upgrade --install --set image.repository="34.125.127.76:8085/gradle-hosted-8085" --set image.tag="${VERSION}" myjavaapp myapp/ '
+                          sh 'helm upgrade --install --set image.repository="34.125.127.76:8085/gradle-hosted-8085" --set image.tag="${VERSION}" java-web-app mongodb-app/ '
                         }
                     }
                }
@@ -63,7 +63,7 @@ pipeline{
              steps{
                 script{
                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-configuration', variable: 'KUBECONFIG')])  {
-                       sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myjavaapp-myapp:8080'
+                       sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myjavaapp-mongodb-app:8080'
                      }
                 }
             }
