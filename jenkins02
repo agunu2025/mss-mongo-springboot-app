@@ -63,7 +63,7 @@ pipeline{
              steps{
                 script{
                    withCredentials([kubeconfigFile(credentialsId: 'kubernetes-configuration', variable: 'KUBECONFIG')])  {
-                       sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myjavaapp-mongodb-app:8080'
+                       sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl java-web-app-mongodb-app:8080'
                      }
                 }
             }
