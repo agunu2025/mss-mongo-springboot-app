@@ -33,6 +33,9 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/bin/sh"]
+          args: ["-c","sh /usr/local/tomcat/bin/startup.sh;while true; do echo hello; sleep 10;done"]
+
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -40,12 +43,22 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /java-web-app
               port: http
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /java-web-app
               port: http
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
